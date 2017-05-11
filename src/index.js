@@ -11,16 +11,19 @@
  */
 function isAllTrue(array, fn) {
     if (array.length == 0 || !(array instanceof Array)) {
-        throw new Error("empty array");
+        throw new Error('empty array');
     }
-    if (!(typeof(fn) == "function")) {
-        throw new Error("fn is not a function");
+    if (!(typeof(fn) == 'function')) {
+        throw new Error('fn is not a function');
     }
-    var is_true = true;
+
+    var isTrue = true;
+
     for (var i = 0; i < array.length; i++) {
-        is_true = is_true && fn(array[i]);
+        isTrue = isTrue && fn(array[i]);
     }
-    return is_true;
+
+    return isTrue;
 }
 
 /*
@@ -34,16 +37,19 @@ function isAllTrue(array, fn) {
  */
 function isSomeTrue(array, fn) {
     if (array.length == 0 || !(array instanceof Array)) {
-        throw new Error("empty array");
+        throw new Error('empty array');
     }
-    if (!(typeof(fn) == "function")) {
-        throw new Error("fn is not a function");
+    if (!(typeof(fn) == 'function')) {
+        throw new Error('fn is not a function');
     }
-    var is_true = false;
+
+    var isTrue = false;
+
     for (var i = 0; i < array.length; i++) {
-        is_true = is_true || fn(array[i]);
+        isTrue = isTrue || fn(array[i]);
     }
-    return is_true;
+
+    return isTrue;
 }
 
 /*
@@ -55,19 +61,22 @@ function isSomeTrue(array, fn) {
  - fn не является функцией (с текстом "fn is not a function")
  */
 function returnBadArguments(fn) {
-    if (!(typeof(fn) == "function")) {
-        throw new Error("fn is not a function");
+    if (!(typeof(fn) == 'function')) {
+        throw new Error('fn is not a function');
     }
+
     var massiv = [],
-        index_massiv = 0;
+        indexMassiv = 0;
+
     for (var i = 1; i < arguments.length; i++) {
         try {
             fn(arguments[i]);
         } catch (e) {
-            massiv[index_massiv] = arguments[i];
-            index_massiv++;
+            massiv[indexMassiv] = arguments[i];
+            indexMassiv++;
         }
     }
+
     return massiv;
 }
 
@@ -86,44 +95,58 @@ function returnBadArguments(fn) {
  - какой-либо из аргументов div является нулем (с текстом "division by 0")
  */
 function calculator(number) {
-    if (typeof(number) != "number" && typeof(number) != "undefined") {
-        throw Error("number is not a number");
+    if (typeof(number) != 'number' && typeof(number) != 'undefined') {
+        throw Error('number is not a number');
     }
     if (number === undefined) {
         number = 0;
     }
     var obj = {
-        number: number,
         sum: function () {
+            var result = number;
+
             for (var i = 0; i < arguments.length; i++) {
-                this.number += arguments[i];
+                result += arguments[i];
             }
-            return this.number;
+
+            return result;
         },
         dif: function () {
+            var result = number;
+
             for (var i = 0; i < arguments.length; i++) {
-                this.number -= arguments[i];
+                result -= arguments[i];
             }
-            return this.number;
+
+            return result;
         },
         div: function () {
-            debugger;
+            var result = number;
+
             for (var i = 0; i < arguments.length; i++) {
+                if (arguments[i] === null) {
+                    continue;
+                }
                 if (arguments[i] == 0) {
-                    throw new Error("division by 0");
+                    throw new Error('division by 0');
                 } else {
-                    this.number /= arguments[i];
+                    result /= arguments[i];
                 }
             }
-            return this.number;
+
+            return result;
         },
         mul: function () {
+            var result = number;
+
             for (var i = 0; i < arguments.length; i++) {
-                this.number *= arguments[i];
+                result *= arguments[i];
             }
-            return this.number;
+
+            return result;
         }
     }
+
     return obj;
 }
 
