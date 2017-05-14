@@ -5,9 +5,8 @@
  Напишите аналог встроенного метода forEach для работы с массивами
  */
 function forEach(array, fn) {
-    for(var i = 0; i < array.length; i++)
-    {
-        fn(array[i],i,array);
+    for (var i = 0; i < array.length; i++) {
+        fn(array[i], i, array);
     }
 }
 
@@ -17,10 +16,11 @@ function forEach(array, fn) {
  */
 function map(array, fn) {
     var rezArray = [];
-    for(var i = 0; i < array.length; i++)
-    {
-        rezArray[i] = fn(array[i],i,array);
+
+    for (var i = 0; i < array.length; i++) {
+        rezArray[i] = fn(array[i], i, array);
     }
+
     return rezArray;
 }
 
@@ -31,15 +31,16 @@ function map(array, fn) {
 function reduce(array, fn, initial) {
     var previousValue = initial,
         index = 0;
-    if(initial === undefined) {
+
+    if (initial === undefined) {
         previousValue = array[0];
         index = 1;
     }
 
-    for(var i = index ; i < array.length; i++)
-    {
-        previousValue = fn(previousValue, array[i],i,array);
+    for (var i = index; i < array.length; i++) {
+        previousValue = fn(previousValue, array[i], i, array);
     }
+
     return previousValue;
 }
 
@@ -49,8 +50,7 @@ function reduce(array, fn, initial) {
  Функция должна удалить указанное свойство из указанного объекта
  */
 function deleteProperty(obj, prop) {
-    if(obj.hasOwnProperty(prop))
-    {
+    if (obj.hasOwnProperty(prop)) {
         delete obj[prop];
     }
 }
@@ -61,6 +61,7 @@ function deleteProperty(obj, prop) {
  Функция должна проверить существует ли укзаанное свойство в указанном объекте
  */
 function hasProperty(obj, prop) {
+
     return obj.hasOwnProperty(prop);
 }
 
@@ -69,6 +70,7 @@ function hasProperty(obj, prop) {
  Функция должна получить все перечисляемые свойства объекта и вернуть их в виде массива
  */
 function getEnumProps(obj) {
+
     return Object.keys(obj);
 }
 
@@ -78,10 +80,11 @@ function getEnumProps(obj) {
  */
 function upperProps(obj) {
     var propeties = Object.getOwnPropertyNames(obj);
-    for(var i = 0; i < propeties.length; i++)
-    {
+
+    for (var i = 0; i < propeties.length; i++) {
         propeties[i] = propeties[i].toUpperCase();
     }
+
     return propeties;
 }
 
@@ -93,33 +96,32 @@ function slice(array, from, to) {
     var rezArray = [],
         indexStart = from,
         indexEnd = to;
+
     if (from === undefined) {
         indexStart = 0;
     } else {
-        if(from < 0) {
+        if (from < 0) {
             indexStart = array.length + from;
         }
-        if(from < 0)
-        {
+        if (from < 0) {
             indexStart = 0;
         }
     }
     if (to === undefined) {
         indexEnd = array.length;
     } else {
-        if(to < 0) {
+        if (to < 0) {
             indexEnd = array.length + to;
         }
-        if(to > array.length)
-        {
+        if (to > array.length) {
             indexEnd = array.length;
         }
     }
-    for(var i = indexStart, indexRez = 0; i < indexEnd; i++)
-    {
+    for (var i = indexStart, indexRez = 0; i < indexEnd; i++) {
         rezArray[indexRez] = array[i];
         indexRez++;
     }
+
     return rezArray;
 }
 
@@ -132,9 +134,11 @@ function createProxy(obj) {
     var proxy = new Proxy(obj, {
         set(target, prop, value) {
             target[prop] = value ** 2;
+
             return true;
         }
     });
+
     return proxy;
 }
 
