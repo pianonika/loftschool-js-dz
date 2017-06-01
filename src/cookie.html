@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="homework-container">
+    <style>
+        #homework-container {
+            font-family: Geneva, Arial, Helvetica, sans-serif;
+        }
+
+        #homework-container input {
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            padding: 5px;
+            margin: 5px 0;
+        }
+
+        #homework-container table {
+            width: 100%;
+        }
+
+        #homework-container table td,
+        #homework-container table th {
+            padding: 5px;
+            text-align: left;
+        }
+
+        #homework-container tbody tr:nth-child(odd) {
+            background: #ddd;
+        }
+    </style>
+
+    <div id="filter-block">
+        Поиск cookie: <input type="text" id="filter-name-input" placeholder="имя cookie">
+    </div>
+    <hr>
+    <div id="add-block">
+        Добавить cookie:<br>
+        <input type="text" id="add-name-input" placeholder="имя cookie"><br>
+        <input type="text" id="add-value-input" placeholder="значение cookie"><br>
+        <button id="add-button">добавить cookie</button>
+    </div>
+    <hr>
+    <div id="list-block">
+        Доступные cookie:
+        <table id="list-table">
+            <thead>
+            <tr>
+                <th>имя</th>
+                <th>значение</th>
+                <th>удалить</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- tr добавлять сюда -->
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    /**
+     * ДЗ 7.2 - Создать редактор cookie с возможностью фильтрации
+     *
+     * На странице должна быть таблица со списком имеющихся cookie:
+     * - имя
+     * - значение
+     * - удалить (при нажатии на кнопку, выбранная cookie удаляется из браузера и таблицы)
+     *
+     * На странице должна быть форма для добавления новой cookie:
+     * - имя
+     * - значение
+     * - добавить (при нажатии на кнопку, в браузер и таблицу добавляется новая cookie с указанным именем и значением)
+     *
+     * Если добавляется cookie с именем уже существующией cookie, то ее значение в браузере и таблице должно быть обновлено
+     *
+     * На странице должно быть текстовое поле для фильтрации cookie
+     * В таблице должны быть только те cookie, в имени или значении которых есть введенное значение
+     * Если в поле фильтра пусто, то должны выводиться все доступные cookie
+     * Если дабавляемая cookie не соответсвуте фильтру, то она должна быть добавлена только в браузер, но не в таблицу
+     * Если добавляется cookie, с именем уже существующией cookie и ее новое значение не соответствует фильтру,
+     * то ее значение должно быть обновлено в браузере, а из таблицы cookie должна быть удалена
+     *
+     * Для более подробной информации можно изучить код тестов
+     *
+     * Запрещено использовать сторонние библиотеки. Разрешено пользоваться только тем, что встроено в браузер
+     */
+
+    /**
+     * homeworkContainer - это контейнер для всех ваших домашних заданий
+     * Если вы создаете новые html-элементы и добавляете их на страницу, то дабавляйте их только в этот контейнер
+     *
+     * @example
+     * homeworkContainer.appendChild(...);
+     */
+    let homeworkContainer = document.querySelector('#homework-container');
+    let filterNameInput = homeworkContainer.querySelector('#filter-name-input');
+    let addNameInput = homeworkContainer.querySelector('#add-name-input');
+    let addValueInput = homeworkContainer.querySelector('#add-value-input');
+    let addButton = homeworkContainer.querySelector('#add-button');
+    let listTable = homeworkContainer.querySelector('#list-table tbody');
+    function isMatching(full, chunk) {
+        if(chunk == ''){
+            return true;
+        }
+        if(~full.toLowerCase().indexOf(chunk.toLowerCase())) {
+            return true;
+        }else {
+            return false;
+        }
+    }
+    function getCookiesMassiv() {
+        var c = document.cookie;
+        console.log(c);
+        var cookies = c.split('; ');
+        console.log(cookies);
+        var massivCookies = [],
+            indexMassiv = 0;
+        for(var i = 0; i < cookies.length; i++)
+        {
+            if(cookies[i]) {
+                var [name,value] = cookies[i].split('=');
+                massivCookies[indexMassiv] = {name: name, value: value};
+                ++indexMassiv;
+            }
+
+        }
+        console.log(massivCookies);
+        return massivCookies;
+    }
+    function clearTable() {
+        //удаляем все из таблицы
+        for (var curNode = listTable.firstChild; curNode != null;) {
+            var nextNode = curNode.nextSibling;
+            listTable.removeChild(curNode);
+            curNode = nextNode;
+        }
+    }
+    function deleteCookie(name) {
+        var d = new Date();
+        d.setTime(d.getTime() - 1000);
+        document.cookie = name + '=;expires='+d.toUTCString();
+    }
+    function fillTable(filter) {
+        //записывает в таблицу подходящие cookie
+        var  massivCookies = getCookiesMassiv();
+        for(var i = 0; i < massivCookies.length; i++)
+        {
+            if (isMatching(massivCookies[i].name, filter) || isMatching(massivCookies[i].value, filter) ) {
+                var row = document.createElement('TR');
+                var td1 = document.createElement('TD');
+                td1.appendChild(document.createTextNode(massivCookies[i].name));
+                var td2 = document.createElement('TD');
+                td2.appendChild (document.createTextNode(massivCookies[i].value));
+                var td3 = document.createElement('TD');
+                var but = document.createElement('BUTTON');
+                but.appendChild(document.createTextNode('DELETE'));
+                but.setAttribute('coname',massivCookies[i].name);
+                but.addEventListener('click', function (e) {
+                    deleteCookie(e.target.getAttribute('coname'));
+                    clearTable();
+                    fillTable('');
+                });
+                td3.appendChild (but);
+                row.appendChild(td1);
+                row.appendChild(td2);
+                row.appendChild(td3);
+                listTable.appendChild(row);
+            }
+        }
+    }
+    filterNameInput.addEventListener('keyup', function() {
+        console.log('keyup');
+        clearTable();
+        fillTable(this.value);
+    });
+
+    addButton.addEventListener('click', () => {
+        document.cookie = addNameInput.value + '=' + addValueInput.value;
+        clearTable();
+        fillTable(filterNameInput.value);
+    });
+    window.onload = () => {
+        clearTable();
+        fillTable('');
+    }
+</script>
+</body>
+</html>
