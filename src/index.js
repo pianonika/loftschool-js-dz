@@ -43,14 +43,42 @@ ymaps.ready(function () {
 
     myMap.geoObjects.add(clusterer);
 
-    // заготовка для хранения данных
-    var dataPoints = { 
-        type: 'FeatureCollection', 
-        features: []
-    };
+    var dataPoints = [];
 
-    // id для новой метки
-    var nextIndexPoint = 1;
+    var socket = new WebSocket("ws://localhost:8090");
+
+    socket.addEventListener('message', function(event) {
+        addPoint(event.data);
+    });
+
+    socket.addEventListener('error', function() {
+        alert('Соединение закрыто или не может быть открыто');
+    });
+
+    function addPoint(point) {
+        var dataPlacemark = JSON.parse(point);
+        dataPoints.push(dataPlacemark)
+
+        var myPlacemark = new ymaps.Placemark(dataPlacemark.geometry.coordinates, dataPlacemark.properties);
+
+        myPlacemark.events.add('click', funEventPlacemarkClick);
+        clusterer.add(myPlacemark);
+
+        console.log(point);
+        console.log(dataPlacemark.geometry.coordinates);
+        console.log(balloon.getPosition());
+
+        if(balloon.isOpen() && dataPlacemark.geometry.coordinates.join(',') == balloon.getPosition().join(','))
+        {
+            var dataForBallon = getDataByPlacemarkId(dataPlacemark.properties.id);
+            balloon.open(dataForBallon.coords, dataForBallon.data);
+        }
+    }
+
+    function sendMessage(point) {
+        socket.send(JSON.stringify(point));
+    }
+
     // функция для клика по метке
     var funEventPlacemarkClick = function (e) {                    
         var placemark = e.get('target');
@@ -61,24 +89,6 @@ ymaps.ready(function () {
             });
         e.preventDefault();
     };
-
-    //достаем сохранненые данные
-    if (localStorage.data) {
-        var store = JSON.parse(localStorage.data);
-        if(store.type && store.type == 'FeatureCollection') {
-            dataPoints = store;
-            nextIndexPoint = dataPoints.features[dataPoints.features.length-1].properties.id + 1;
-            for(var i=0; i < dataPoints.features.length; i++) {
-                var dataPlacemark = dataPoints.features[i];
-
-                var myPlacemark = new ymaps.Placemark(dataPlacemark.geometry.coordinates, dataPlacemark.properties);
-
-                myPlacemark.events.add('click', funEventPlacemarkClick);
-                clusterer.add(myPlacemark);
-            }
-        }
-        
-    }
 
     // Создаем собственный макет с формой для отзывов
     var customForm = ymaps.templateLayoutFactory.createClass(
@@ -122,23 +132,12 @@ ymaps.ready(function () {
                     balloonContentFooter: otzyv.value,
                     person: person.value,
                     data: today.toLocaleString(),
-                    id:nextIndexPoint
                 }
             }
 
-            dataPoints.features.push(dataPlacemark);
+            sendMessage(dataPlacemark);
+            
 
-            var myPlacemark = new ymaps.Placemark(dataPlacemark.geometry.coordinates, dataPlacemark.properties);
-            myPlacemark.events.add('click', funEventPlacemarkClick);
-            clusterer.add(myPlacemark);
-
-            // сохраняем данные
-            localStorage.data = JSON.stringify(dataPoints);            
-
-            var dataForBallon = getDataByPlacemarkId(nextIndexPoint);
-            balloon.open(dataForBallon.coords, dataForBallon.data);
-
-            ++nextIndexPoint;
        }
        // клик на крестике
        if(e.get('domEvent').originalEvent.target.classList && e.get('domEvent').originalEvent.target.classList.contains('close')) 
@@ -163,13 +162,13 @@ ymaps.ready(function () {
     // все отзывы для этих координат
     function getOtzyvyByCoord(coords) {
         var otzyvy = [];
-        for (var i = 0; i < dataPoints.features.length ; i++) {
-            if(coords.join(',') == dataPoints.features[i].geometry.coordinates.join(',')){
+        for (var i = 0; i < dataPoints.length ; i++) {
+            if(coords.join(',') == dataPoints[i].geometry.coordinates.join(',')){
                 otzyvy.push({
-                    person: dataPoints.features[i].properties.person,
-                    place: dataPoints.features[i].properties.balloonContentHeader,
-                    data: dataPoints.features[i].properties.data,
-                    text:  dataPoints.features[i].properties.balloonContentFooter,
+                    person: dataPoints[i].properties.person,
+                    place: dataPoints[i].properties.balloonContentHeader,
+                    data: dataPoints[i].properties.data,
+                    text:  dataPoints[i].properties.balloonContentFooter,
                 })
             }
         }
@@ -179,13 +178,13 @@ ymaps.ready(function () {
     // данные для формы по id метки
     function getDataByPlacemarkId(placemarkid) {
         var otzyvy = [];
-        for (var i = 0; i < dataPoints.features.length ; i++) {
-            if(placemarkid == dataPoints.features[i].properties.id){
+        for (var i = 0; i < dataPoints.length ; i++) {
+            if(placemarkid == dataPoints[i].properties.id){
                 var dataForBallon = { 
-                    coords: dataPoints.features[i].geometry.coordinates,
+                    coords: dataPoints[i].geometry.coordinates,
                     data: {
-                        formHeader: dataPoints.features[i].properties.balloonContentBody,
-                        otzyvy: getOtzyvyByCoord(dataPoints.features[i].geometry.coordinates)
+                        formHeader: dataPoints[i].properties.balloonContentBody,
+                        otzyvy: getOtzyvyByCoord(dataPoints[i].geometry.coordinates)
                     }    
                 };
 
